@@ -28,11 +28,12 @@ import androidx.navigation.fragment.findNavController
 import com.example.android.trackmysleepquality.R
 import com.example.android.trackmysleepquality.database.SleepDatabase
 import com.example.android.trackmysleepquality.databinding.FragmentSleepQualityBinding
+import com.example.android.trackmysleepquality.sleeptracker.SleepNightAdapter
 
 /**
  * Fragment that displays a list of clickable icons,
  * each representing a sleep quality rating.
- * Once the user taps an icon, the quality is set in the current sleepNight
+ * Once the user taps an icon, the quality is set in the current SleepNight
  * and the database is updated.
  */
 class SleepQualityFragment : Fragment() {

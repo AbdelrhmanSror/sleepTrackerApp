@@ -20,15 +20,20 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.GridLayout
+import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.GridLayoutManager
 import com.example.android.trackmysleepquality.R
 import com.example.android.trackmysleepquality.database.SleepDatabase
+import com.example.android.trackmysleepquality.database.SleepNight
 import com.example.android.trackmysleepquality.databinding.FragmentSleepTrackerBinding
 import com.google.android.material.snackbar.Snackbar
+import java.util.*
 
 /**
  * A fragment with buttons to record start and end times for sleep, which are saved in
@@ -48,12 +53,34 @@ class SleepTrackerFragment : Fragment() {
         // Get a reference to the binding object and inflate the fragment views.
         val binding: FragmentSleepTrackerBinding = DataBindingUtil.inflate(
                 inflater, R.layout.fragment_sleep_tracker, container, false)
-        val application= requireNotNull(activity).application
-        val dataSource=SleepDatabase.getInstance(application).sleepDatabaseDao
-        val viewModelFactory=SleepTrackerViewModelFactory(dataSource,application)
-        val sleepTrackerViewModel=ViewModelProviders.of(this,viewModelFactory).get(SleepTrackerViewModel::class.java)
-        binding.sleepTrackerViewModel=sleepTrackerViewModel
+        val application = requireNotNull(activity).application
+        val dataSource = SleepDatabase.getInstance(application).sleepDatabaseDao
+        val viewModelFactory = SleepTrackerViewModelFactory(dataSource, application)
+        val sleepTrackerViewModel = ViewModelProviders.of(this, viewModelFactory).get(SleepTrackerViewModel::class.java)
+        val sleepNightAdapter = SleepNightAdapter(SleepNightAdapter.SleepNightListener { id ->
+            sleepTrackerViewModel.onSleepNightClicked(id)
+
+        })
+        binding.listSleep.adapter = sleepNightAdapter
+        sleepTrackerViewModel.nights.observe(this, Observer {
+            it?.let {
+                sleepNightAdapter.addHeaderAndSubmitList(it)
+            }
+        })
+        binding.sleepTrackerViewModel = sleepTrackerViewModel
         binding.setLifecycleOwner(this)
+        val manager = GridLayoutManager(activity, 3)
+        manager.spanSizeLookup=object :GridLayoutManager.SpanSizeLookup(){
+            override fun getSpanSize(position: Int): Int {
+                return when(position)
+                {
+                    0->3
+                    else->1
+                }
+            }
+
+        }
+        binding.listSleep.layoutManager = manager
         sleepTrackerViewModel.navigateToSleepQuality.observe(this, Observer {
             it?.let {
                 this.findNavController().navigate(SleepTrackerFragmentDirections.actionSleepTrackerFragmentToSleepQualityFragment(it.nightId))
@@ -61,14 +88,20 @@ class SleepTrackerFragment : Fragment() {
             }
         })
         sleepTrackerViewModel.showSnackbar.observe(this, Observer {
-            if(it==true)
-            {
+            if (it == true) {
                 Snackbar.make(
                         activity!!.findViewById(android.R.id.content),
                         getString(R.string.cleared_message),
                         Snackbar.LENGTH_SHORT // How long to display the message.
                 ).show()
                 sleepTrackerViewModel.doneShowingSnackBar()
+
+            }
+        })
+        sleepTrackerViewModel.navigateToSleepDataQuality.observe(this, Observer {
+            it?.let {
+                this.findNavController().navigate(SleepTrackerFragmentDirections.actionSleepTrackerFragmentToSleepDetailsFragment(it))
+                sleepTrackerViewModel.onNavigateToSleepDataQualityDone()
 
             }
         })

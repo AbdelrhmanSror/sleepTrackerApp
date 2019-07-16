@@ -26,15 +26,15 @@ import androidx.room.Update
 interface SleepDatabaseDao
 {
     @Insert
-    fun insert(night:sleepNight)
+    fun insert(night:SleepNight)
     @Query("SELECT * FROM daily_sleep_quality_table ORDER BY nightId DESC")
-    fun getAllNight():LiveData<List<sleepNight>>
+    fun getAllNight():LiveData<List<SleepNight>>
     @Update
-    fun update(night: sleepNight)
+    fun update(night: SleepNight)
     @Query("SELECT * FROM daily_sleep_quality_table WHERE nightId=:Id")
-    fun get(Id:Long):sleepNight
+    fun get(Id:Long):SleepNight
     @Query("DELETE FROM daily_sleep_quality_table")
     fun clear()
     @Query("SELECT * FROM daily_sleep_quality_table ORDER BY nightId DESC LIMIT 1")
-    fun getTonight():sleepNight?
+    fun getTonight():SleepNight?
 }
